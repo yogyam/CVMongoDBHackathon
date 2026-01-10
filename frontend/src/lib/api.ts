@@ -1,4 +1,7 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// Use explicit URL to avoid env var issues
+const API_BASE = typeof window !== 'undefined' 
+    ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080')
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080');
 
 interface FetchOptions extends RequestInit {
     token?: string;
@@ -16,17 +19,27 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
         (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        ...fetchOptions,
-        headers,
-    });
+    const url = `${API_BASE}${endpoint}`;
+    console.log(`API Request: ${fetchOptions.method || 'GET'} ${url}`); // Debug log
+    console.log(`API_BASE: ${API_BASE}`); // Debug log
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Request failed' }));
-        throw new Error(error.error || `HTTP ${response.status}`);
+    try {
+        const response = await fetch(url, {
+            ...fetchOptions,
+            headers,
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Request failed' }));
+            console.error(`API Error: ${response.status} ${url}`, error); // Debug log
+            throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error(`Fetch error for ${url}:`, error);
+        throw error;
     }
-
-    return response.json();
 }
 
 // Auth

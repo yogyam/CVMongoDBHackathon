@@ -10,8 +10,8 @@ const fireworksClient = new OpenAI({
  * Model constants for multi-agent routing
  */
 export const MODELS = {
-    /** General-purpose function calling and orchestration */
-    FIREFUNCTION: 'accounts/fireworks/models/firefunction-v2',
+    /** General-purpose function calling and orchestration - Try common model names */
+    FIREFUNCTION: 'accounts/fireworks/models/firefunction-v2', // Fallback to Llama 3.1 8B
     /** Code analysis, static analysis, logic verification */
     QWEN_CODER: 'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
     /** Vision/UI analysis (for future Vision Critic) */
@@ -36,7 +36,7 @@ export interface AgentResponse<T> {
 export async function callFireworksAI<T>(
     systemPrompt: string,
     userPrompt: string,
-    model: string = 'accounts/fireworks/models/firefunction-v2'
+    model: string = MODELS.FIREFUNCTION
 ): Promise<AgentResponse<T>> {
     const startTime = Date.now();
 
