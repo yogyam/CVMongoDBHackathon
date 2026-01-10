@@ -18,9 +18,10 @@ export default function FreelancerProjectDetailPage() {
 
     // Submit form state
     const [showSubmitForm, setShowSubmitForm] = useState(false);
-    const [files, setFiles] = useState([{ filename: '', content: '', language: 'javascript' }]);
+    const [files, setFiles] = useState<{ filename: string; content: string; language: string }[]>([]);
     const [notes, setNotes] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [folderUploading, setFolderUploading] = useState(false);
 
     useEffect(() => {
         if (token && id) {
@@ -45,10 +46,120 @@ export default function FreelancerProjectDetailPage() {
         setFiles(files.filter((_, i) => i !== index));
     };
 
-    const handleFileChange = (index: number, field: string, value: string) => {
-        const updated = [...files];
-        updated[index] = { ...updated[index], [field]: value };
-        setFiles(updated);
+    const handleFolderUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const fileList = event.target.files;
+        if (!fileList || fileList.length === 0) return;
+        
+        setFolderUploading(true);
+        const uploadedFiles: { filename: string; content: string; language: string }[] = [];
+        
+        // Define file extensions we want to include (skip node_modules, .git, etc.)
+        const allowedExtensions = [
+            'js', 'jsx', 'ts', 'tsx', 'vue', 'svelte',
+            'py', 'java', 'cpp', 'c', 'cs', 'php', 'rb', 'go', 'rs',
+            'html', 'css', 'scss', 'sass', 'less',
+            'json', 'yaml', 'yml', 'xml', 'toml',
+            'md', 'txt', 'env', 'gitignore', 'dockerfile',
+            'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'
+        ];
+        
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const relativePath = file.webkitRelativePath || file.name;
+            
+            // Skip unwanted directories and files
+            if (relativePath.includes('node_modules/') || 
+                relativePath.includes('.git/') || 
+                relativePath.includes('dist/') || 
+                relativePath.includes('build/') ||
+                relativePath.includes('.next/') ||
+                relativePath.includes('coverage/') ||
+                relativePath.startsWith('.')) {
+                continue;
+            }
+            
+            const extension = file.name.split('.').pop()?.toLowerCase() || '';
+            if (!allowedExtensions.includes(extension)) continue;
+            
+            try {
+                const content = await readFileContent(file);
+                const language = detectLanguage(extension);
+                
+                uploadedFiles.push({
+                    filename: relativePath,
+                    content,
+                    language
+                });
+            } catch (error) {
+                console.error(`Error reading file ${relativePath}:`, error);
+            }
+        }
+        
+        setFiles(uploadedFiles);
+        setFolderUploading(false);
+    };
+    
+    const readFileContent = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            // Check if it's an image file
+            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'];
+            const isImage = imageExtensions.includes(file.name.split('.').pop()?.toLowerCase() || '');
+            
+            if (isImage) {
+                reader.onload = (e) => resolve(e.target?.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            } else {
+                reader.onload = (e) => resolve(e.target?.result as string);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            }
+        });
+    };
+    
+    const detectLanguage = (extension: string): string => {
+        const languageMap: Record<string, string> = {
+            'js': 'javascript',
+            'jsx': 'jsx',
+            'ts': 'typescript',
+            'tsx': 'tsx',
+            'vue': 'vue',
+            'svelte': 'svelte',
+            'py': 'python',
+            'java': 'java',
+            'cpp': 'cpp',
+            'c': 'c',
+            'cs': 'csharp',
+            'php': 'php',
+            'rb': 'ruby',
+            'go': 'go',
+            'rs': 'rust',
+            'html': 'html',
+            'css': 'css',
+            'scss': 'scss',
+            'sass': 'sass',
+            'less': 'less',
+            'json': 'json',
+            'yaml': 'yaml',
+            'yml': 'yaml',
+            'xml': 'xml',
+            'toml': 'toml',
+            'md': 'markdown',
+            'txt': 'text',
+            'env': 'bash',
+            'dockerfile': 'dockerfile',
+            'png': 'image',
+            'jpg': 'image',
+            'jpeg': 'image',
+            'gif': 'image',
+            'svg': 'image',
+            'webp': 'image',
+            'ico': 'image'
+        };
+        
+        return languageMap[extension] || 'text';
     };
 
     const handleFileUpload = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,9 +237,8 @@ export default function FreelancerProjectDetailPage() {
     const handleSubmit = async () => {
         if (!token) return;
 
-        const validFiles = files.filter(f => f.filename && f.content);
-        if (validFiles.length === 0) {
-            setError('Please add at least one file');
+        if (files.length === 0) {
+            setError('Please upload a folder with your project files');
             return;
         }
 
@@ -138,18 +248,15 @@ export default function FreelancerProjectDetailPage() {
         try {
             await revisionsApi.submit({
                 project_id: id as string,
-                files: validFiles,
+                files: files,  // Use all uploaded files
                 notes
             }, token);
-
+            
             // Refresh data
             const revisionsRes = await revisionsApi.list(id as string, token);
             setRevisions(revisionsRes.revisions);
             setShowSubmitForm(false);
-            setFiles([{ filename: '', content: '', language: 'javascript' }]);
-            setNotes('');
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to submit work');
+            setFiles([]);
         } finally {
             setSubmitting(false);
         }
@@ -377,92 +484,83 @@ export default function FreelancerProjectDetailPage() {
             {/* Submit Work Modal */}
             {showSubmitForm && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 overflow-auto">
-                    <div className="glass-card p-6 max-w-3xl w-full my-8">
+                    <div className="glass-card p-6 max-w-4xl w-full my-8">
                         <h3 className="text-xl font-semibold mb-4">Submit Work</h3>
 
-                        {/* Files */}
-                        <div className="space-y-4 mb-6">
-                            {files.map((file, index) => (
-                                <div key={index} className="p-4 rounded-lg bg-card border border-border">
-                                    <div className="flex items-center gap-4 mb-3">
+                        {/* Folder Upload */}
+                        <div className="mb-6">
+                            {files.length === 0 ? (
+                                <div className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center">
+                                    <div className="text-4xl mb-4">📁</div>
+                                    <h4 className="text-lg font-semibold mb-2">Upload Your Project Folder</h4>
+                                    <p className="text-muted mb-4">Select your project folder to automatically upload all relevant files</p>
+                                    
+                                    <label className="btn btn-primary cursor-pointer">
+                                        {folderUploading ? (
+                                            <span className="animate-pulse">📤 Processing Files...</span>
+                                        ) : (
+                                            <>📂 Choose Folder</>
+                                        )}
                                         <input
-                                            type="text"
-                                            value={file.filename}
-                                            onChange={(e) => handleFileChange(index, 'filename', e.target.value)}
-                                            className="input flex-1"
-                                            placeholder="filename.js"
+                                            type="file"
+                                            className="hidden"
+                                            webkitdirectory=""
+                                            multiple
+                                            onChange={handleFolderUpload}
+                                            disabled={folderUploading}
                                         />
-                                        <select
-                                            value={file.language}
-                                            onChange={(e) => handleFileChange(index, 'language', e.target.value)}
-                                            className="input w-40"
-                                            disabled={file.language === 'image'}
+                                    </label>
+                                    
+                                    <div className="mt-4 text-xs text-muted">
+                                        <p>• Automatically skips node_modules, .git, dist, build folders</p>
+                                        <p>• Supports code files, images, configs, and documentation</p>
+                                        <p>• AI agent will analyze all uploaded files</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="font-semibold">📁 Uploaded Files ({files.length})</h4>
+                                        <button
+                                            onClick={() => setFiles([])}
+                                            className="btn btn-secondary btn-sm"
                                         >
-                                            <option value="javascript">JavaScript</option>
-                                            <option value="typescript">TypeScript</option>
-                                            <option value="python">Python</option>
-                                            <option value="html">HTML</option>
-                                            <option value="css">CSS</option>
-                                            <option value="jsx">JSX</option>
-                                            <option value="tsx">TSX</option>
-                                            <option value="json">JSON</option>
-                                            <option value="markdown">Markdown</option>
-                                            <option value="image">Image</option>
-                                        </select>
-                                        <label className="btn btn-secondary cursor-pointer text-sm whitespace-nowrap">
-                                            📎 Upload
+                                            🗑️ Clear All
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="max-h-64 overflow-y-auto space-y-2 p-4 bg-card/50 rounded-lg border border-border">
+                                        {files.map((file, index) => (
+                                            <div key={index} className="flex items-center gap-3 text-sm p-2 hover:bg-card/80 rounded">
+                                                <span className="text-primary font-mono text-xs flex-shrink-0">
+                                                    {file.language === 'image' ? '🖼️' : '📄'}
+                                                </span>
+                                                <span className="flex-1 truncate font-mono">{file.filename}</span>
+                                                <span className="text-muted text-xs bg-muted/10 px-2 py-1 rounded">
+                                                    {file.language}
+                                                </span>
+                                                <span className="text-muted text-xs">
+                                                    {file.language === 'image' ? 'Image' : `${file.content.length} chars`}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="flex justify-center">
+                                        <label className="btn btn-secondary cursor-pointer">
+                                            📂 Choose Different Folder
                                             <input
                                                 type="file"
                                                 className="hidden"
-                                                onChange={(e) => handleFileUpload(index, e)}
-                                                accept=".js,.jsx,.ts,.tsx,.py,.html,.css,.scss,.sass,.json,.md,.java,.cpp,.c,.go,.rs,.rb,.php,.swift,.kt,.png,.jpg,.jpeg,.gif,.svg,.webp,.bmp"
+                                                webkitdirectory=""
+                                                multiple
+                                                onChange={handleFolderUpload}
                                             />
                                         </label>
-                                        {files.length > 1 && (
-                                            <button
-                                                onClick={() => handleRemoveFile(index)}
-                                                className="text-danger hover:text-danger/80"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
                                     </div>
-                                    {file.language === 'image' && file.content ? (
-                                        <div className="border border-border rounded p-4 bg-card">
-                                            <img 
-                                                src={file.content} 
-                                                alt={file.filename}
-                                                className="max-w-full max-h-64 mx-auto rounded"
-                                            />
-                                            <div className="mt-2 text-xs text-muted text-center">
-                                                Image loaded (Base64)
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <textarea
-                                                value={file.content}
-                                                onChange={(e) => handleFileChange(index, 'content', e.target.value)}
-                                                className="input min-h-[150px] font-mono text-sm resize-none"
-                                                placeholder="Upload a file or paste your code here..."
-                                            />
-                                            {file.content && (
-                                                <div className="mt-2 text-xs text-muted">
-                                                    {file.content.length} characters
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
                                 </div>
-                            ))}
+                            )}
                         </div>
-
-                        <button
-                            onClick={handleAddFile}
-                            className="btn btn-secondary w-full mb-6"
-                        >
-                            + Add Another File
-                        </button>
 
                         {/* Notes */}
                         <div className="mb-6">
@@ -484,7 +582,7 @@ export default function FreelancerProjectDetailPage() {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting}
+                                disabled={submitting || files.length === 0}
                                 className="btn btn-primary flex-1"
                             >
                                 {submitting ? (

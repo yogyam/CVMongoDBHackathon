@@ -8,6 +8,22 @@ export interface IRequirements {
     architect_reasoning: string;
 }
 
+export interface IRequirementsHistory {
+    version: number;
+    requirements: IRequirements;
+    updated_at: Date;
+    updated_by: Types.ObjectId;
+    change_reason?: string;
+    delta_analysis?: {
+        cost_impact_usdc: number;
+        hours_difference: number;
+        scope_change: 'increase' | 'decrease' | 'modification';
+        requires_approval: boolean;
+        approved?: boolean;
+        approved_at?: Date;
+    };
+}
+
 export interface IProject extends Document {
     project_code: string;
 
@@ -22,6 +38,8 @@ export interface IProject extends Document {
 
     // AI-Generated Requirements
     requirements?: IRequirements;
+    requirements_history: IRequirementsHistory[];
+    requirements_version: number;
 
     // Status Management
     status: 'CREATED' | 'REQUIREMENTS_GENERATED' | 'IN_PROGRESS' | 'IN_REVIEW' | 'APPROVED' | 'COMPLETED';
@@ -30,9 +48,15 @@ export interface IProject extends Document {
     current_revision: number;
     highest_score: number;
 
-    // Budget
+    // Budget & Delta Management
+    original_budget_usdc: number;
     budget_usdc: number;
     released_usdc: number;
+    pending_delta_approval?: {
+        additional_cost_usdc: number;
+        reason: string;
+        requested_at: Date;
+    };
     payment_status: 'ESCROWED' | 'PENDING_RELEASE' | 'RELEASED';
 
     // Timestamps
@@ -86,6 +110,56 @@ const ProjectSchema = new Schema<IProject>({
         estimated_hours: Number,
         architect_reasoning: String
     },
+    
+    // Requirements History & Versioning
+    requirements_history: [{
+        version: {
+            type: Number,
+            required: true
+        },
+        requirements: {
+            structured_brief: String,
+            acceptance_criteria: [String],
+            technical_stack: [String],
+            estimated_hours: Number,
+            architect_reasoning: String
+        },
+        updated_at: {
+            type: Date,
+            default: Date.now
+        },
+        updated_by: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        change_reason: String,
+        delta_analysis: {
+            cost_impact_usdc: {
+                type: Number,
+                default: 0
+            },
+            hours_difference: {
+                type: Number,
+                default: 0
+            },
+            scope_change: {
+                type: String,
+                enum: ['increase', 'decrease', 'modification'],
+                default: 'modification'
+            },
+            requires_approval: {
+                type: Boolean,
+                default: false
+            },
+            approved: Boolean,
+            approved_at: Date
+        }
+    }],
+    requirements_version: {
+        type: Number,
+        default: 1
+    },
 
     // Status Management
     status: {
@@ -108,7 +182,12 @@ const ProjectSchema = new Schema<IProject>({
         index: true
     },
 
-    // Budget
+    // Budget & Delta Management
+    original_budget_usdc: {
+        type: Number,
+        required: true,
+        min: 0
+    },
     budget_usdc: {
         type: Number,
         required: true,
@@ -118,6 +197,17 @@ const ProjectSchema = new Schema<IProject>({
         type: Number,
         default: 0,
         min: 0
+    },
+    pending_delta_approval: {
+        additional_cost_usdc: {
+            type: Number,
+            min: 0
+        },
+        reason: String,
+        requested_at: {
+            type: Date,
+            default: Date.now
+        }
     },
     payment_status: {
         type: String,

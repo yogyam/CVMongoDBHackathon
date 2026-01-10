@@ -65,6 +65,14 @@ export const projects = {
     create: (data: { title: string; description: string; freelancer_email: string; budget_usdc: number }, token: string) =>
         apiFetch<{ project: Project }>('/api/projects', { method: 'POST', body: JSON.stringify(data), token }),
 
+    updateRequirements: (id: string, data: { structured_brief: string; acceptance_criteria: string[]; technical_stack?: string[]; estimated_hours?: number; change_reason?: string }, token: string) =>
+        apiFetch<{ 
+            project: { id: string; requirements: any; requirements_version: number }; 
+            delta_analysis: any; 
+            requires_approval: boolean; 
+            pending_approval?: any; 
+        }>(`/api/projects/${id}/requirements`, { method: 'PUT', body: JSON.stringify(data), token }),
+
     approve: (id: string, revisionId: string, feedback: string, token: string) =>
         apiFetch('/api/projects/' + id + '/approve', { method: 'POST', body: JSON.stringify({ revision_id: revisionId, feedback }), token }),
 
