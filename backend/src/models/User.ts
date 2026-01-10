@@ -7,8 +7,12 @@ export interface IUser extends Document {
     full_name: string;
     created_at: Date;
 
-    // Optional future fields
+    // Coinbase Wallet Integration
     wallet_address?: string;
+    cdp_user_id?: string;  // Coinbase CDP user ID
+    wallet_network?: 'base-sepolia' | 'base' | 'ethereum-sepolia' | 'ethereum';  // Network for the wallet
+    
+    // Optional future fields
     reputation_score?: number;
 }
 
@@ -41,11 +45,25 @@ const UserSchema = new Schema<IUser>({
         default: Date.now
     },
 
-    // Optional fields for future phases
+    // Coinbase Wallet Integration
     wallet_address: {
+        type: String,
+        sparse: true,
+        lowercase: true,
+        trim: true,
+        index: true
+    },
+    cdp_user_id: {
         type: String,
         sparse: true
     },
+    wallet_network: {
+        type: String,
+        enum: ['base-sepolia', 'base', 'ethereum-sepolia', 'ethereum'],
+        default: 'base-sepolia'
+    },
+    
+    // Optional fields for future phases
     reputation_score: {
         type: Number,
         default: 0,

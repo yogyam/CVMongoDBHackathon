@@ -7,6 +7,7 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "create-wallet": "ts-node src/services/create-wallet.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -17,6 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.43.0",
+    "@coinbase/coinbase-sdk": "^0.25.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
