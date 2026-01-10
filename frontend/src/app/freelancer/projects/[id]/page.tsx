@@ -51,6 +51,78 @@ export default function FreelancerProjectDetailPage() {
         setFiles(updated);
     };
 
+    const handleFileUpload = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const filename = file.name;
+        const ext = filename.split('.').pop()?.toLowerCase() || '';
+        
+        // Check if it's an image file
+        const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp'];
+        const isImage = imageExtensions.includes(ext);
+
+        const reader = new FileReader();
+        
+        if (isImage) {
+            // For images, read as base64 data URL
+            reader.onload = (e) => {
+                const content = e.target?.result as string; // base64 data URL
+                const updated = [...files];
+                updated[index] = {
+                    filename,
+                    content, // Store base64 data URL
+                    language: 'image' // Special language marker for images
+                };
+                setFiles(updated);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // For text files, read as text
+            reader.onload = (e) => {
+                const content = e.target?.result as string;
+                
+                // Detect language from extension
+                const languageMap: Record<string, string> = {
+                    'js': 'javascript',
+                    'jsx': 'jsx',
+                    'ts': 'typescript',
+                    'tsx': 'tsx',
+                    'py': 'python',
+                    'html': 'html',
+                    'css': 'css',
+                    'scss': 'css',
+                    'sass': 'css',
+                    'json': 'json',
+                    'md': 'markdown',
+                    'java': 'java',
+                    'cpp': 'cpp',
+                    'c': 'c',
+                    'go': 'go',
+                    'rs': 'rust',
+                    'rb': 'ruby',
+                    'php': 'php',
+                    'swift': 'swift',
+                    'kt': 'kotlin',
+                };
+                const detectedLanguage = languageMap[ext] || 'javascript';
+
+                // Update the file entry
+                const updated = [...files];
+                updated[index] = {
+                    filename,
+                    content,
+                    language: detectedLanguage
+                };
+                setFiles(updated);
+            };
+            reader.readAsText(file);
+        }
+
+        // Reset input so same file can be selected again
+        event.target.value = '';
+    };
+
     const handleSubmit = async () => {
         if (!token) return;
 
@@ -324,6 +396,7 @@ export default function FreelancerProjectDetailPage() {
                                             value={file.language}
                                             onChange={(e) => handleFileChange(index, 'language', e.target.value)}
                                             className="input w-40"
+                                            disabled={file.language === 'image'}
                                         >
                                             <option value="javascript">JavaScript</option>
                                             <option value="typescript">TypeScript</option>
@@ -332,7 +405,19 @@ export default function FreelancerProjectDetailPage() {
                                             <option value="css">CSS</option>
                                             <option value="jsx">JSX</option>
                                             <option value="tsx">TSX</option>
+                                            <option value="json">JSON</option>
+                                            <option value="markdown">Markdown</option>
+                                            <option value="image">Image</option>
                                         </select>
+                                        <label className="btn btn-secondary cursor-pointer text-sm whitespace-nowrap">
+                                            📎 Upload
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                onChange={(e) => handleFileUpload(index, e)}
+                                                accept=".js,.jsx,.ts,.tsx,.py,.html,.css,.scss,.sass,.json,.md,.java,.cpp,.c,.go,.rs,.rb,.php,.swift,.kt,.png,.jpg,.jpeg,.gif,.svg,.webp,.bmp"
+                                            />
+                                        </label>
                                         {files.length > 1 && (
                                             <button
                                                 onClick={() => handleRemoveFile(index)}
@@ -342,12 +427,32 @@ export default function FreelancerProjectDetailPage() {
                                             </button>
                                         )}
                                     </div>
-                                    <textarea
-                                        value={file.content}
-                                        onChange={(e) => handleFileChange(index, 'content', e.target.value)}
-                                        className="input min-h-[150px] font-mono text-sm resize-none"
-                                        placeholder="Paste your code here..."
-                                    />
+                                    {file.language === 'image' && file.content ? (
+                                        <div className="border border-border rounded p-4 bg-card">
+                                            <img 
+                                                src={file.content} 
+                                                alt={file.filename}
+                                                className="max-w-full max-h-64 mx-auto rounded"
+                                            />
+                                            <div className="mt-2 text-xs text-muted text-center">
+                                                Image loaded (Base64)
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <textarea
+                                                value={file.content}
+                                                onChange={(e) => handleFileChange(index, 'content', e.target.value)}
+                                                className="input min-h-[150px] font-mono text-sm resize-none"
+                                                placeholder="Upload a file or paste your code here..."
+                                            />
+                                            {file.content && (
+                                                <div className="mt-2 text-xs text-muted">
+                                                    {file.content.length} characters
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             ))}
                         </div>
