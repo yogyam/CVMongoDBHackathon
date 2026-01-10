@@ -1,4 +1,4 @@
-import { callFireworksAI, AgentResponse } from '../services/fireworks';
+import { callFireworksAI, AgentResponse, MODELS } from '../services/fireworks';
 import { Project, AgentAction } from '../models';
 import { Types } from 'mongoose';
 
@@ -60,7 +60,8 @@ Respond with the JSON schema specified.`;
 
     const result = await callFireworksAI<ArchitectOutput>(
         ARCHITECT_SYSTEM_PROMPT,
-        userPrompt
+        userPrompt,
+        MODELS.QWEN_CODER
     );
 
     // Log the agent action to MongoDB

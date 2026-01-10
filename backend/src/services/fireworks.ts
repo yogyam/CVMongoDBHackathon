@@ -1,21 +1,29 @@
 import OpenAI from 'openai';
 
-// Fireworks AI uses OpenAI-compatible API
-const fireworksClient = new OpenAI({
-    apiKey: process.env.FIREWORKS_API_KEY || '',
-    baseURL: 'https://api.fireworks.ai/inference/v1'
-});
+// Lazy initialization to ensure dotenv has loaded the API key
+let fireworksClient: OpenAI | null = null;
+
+function getClient(): OpenAI {
+    if (!fireworksClient) {
+        fireworksClient = new OpenAI({
+            apiKey: process.env.FIREWORKS_API_KEY || '',
+            baseURL: 'https://api.fireworks.ai/inference/v1'
+        });
+    }
+    return fireworksClient;
+}
 
 /**
  * Model constants for multi-agent routing
+ * Using models available on user's Fireworks AI account
  */
 export const MODELS = {
-    /** General-purpose function calling and orchestration */
-    FIREFUNCTION: 'accounts/fireworks/models/firefunction-v2',
-    /** Code analysis, static analysis, logic verification */
-    QWEN_CODER: 'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
-    /** Vision/UI analysis (for future Vision Critic) */
-    LLAMA_VISION: 'accounts/fireworks/models/llama-v3p1-405b-instruct'
+    /** General-purpose function calling and orchestration (Qwen3 VL Thinking) */
+    FIREFUNCTION: 'accounts/fireworks/models/qwen3-vl-235b-a22b-thinking',
+    /** Code analysis, static analysis, logic verification (Qwen3 Coder 480B) */
+    QWEN_CODER: 'accounts/fireworks/models/qwen3-coder-480b-a35b-instruct',
+    /** Vision/UI analysis for screenshots (Llama 3.2 Vision) */
+    LLAMA_VISION: 'accounts/fireworks/models/llama-v3p2-11b-vision-instruct'
 } as const;
 
 export type ModelType = typeof MODELS[keyof typeof MODELS];
@@ -36,7 +44,7 @@ export interface AgentResponse<T> {
 export async function callFireworksAI<T>(
     systemPrompt: string,
     userPrompt: string,
-    model: string = 'accounts/fireworks/models/firefunction-v2'
+    model: string = MODELS.FIREFUNCTION
 ): Promise<AgentResponse<T>> {
     const startTime = Date.now();
 
@@ -45,7 +53,7 @@ export async function callFireworksAI<T>(
             throw new Error('FIREWORKS_API_KEY not configured');
         }
 
-        const response = await fireworksClient.chat.completions.create({
+        const response = await getClient().chat.completions.create({
             model,
             messages: [
                 { role: 'system', content: systemPrompt },
@@ -86,4 +94,4 @@ export async function callFireworksAI<T>(
     }
 }
 
-export default fireworksClient;
+export default getClient;
