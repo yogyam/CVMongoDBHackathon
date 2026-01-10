@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cdp-example-card-bg-color: #ffffff;
+  --cdp-example-text-color: #1a1a1a;
+  --cdp-example-accent-color: #0052ff;
+}
+
+[data-theme="dark"] {
+  --cdp-example-card-bg-color: #1a1a1a;
+  --cdp-example-text-color: #ffffff;
+  --cdp-example-accent-color: #0052ff;
+}
