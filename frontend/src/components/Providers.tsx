@@ -1,6 +1,6 @@
 "use client";
 
-import { CDPReactProvider } from "@coinbase/cdp-react/components/CDPReactProvider";
+import { CDPReactProvider } from "@coinbase/cdp-react";
 import { theme } from "./theme";
 
 interface ProvidersProps {
