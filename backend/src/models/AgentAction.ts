@@ -4,7 +4,7 @@ export interface IAgentAction extends Document {
     timestamp: Date;
 
     // Agent Identity
-    agent: 'ARCHITECT' | 'CRITIC' | 'MEDIATOR';
+    agent: 'ARCHITECT' | 'CRITIC' | 'CODE_CRITIC' | 'VISION_CRITIC' | 'MEDIATOR' | 'PAYMENT';
     action: string;
 
     // Context
@@ -22,6 +22,10 @@ export interface IAgentAction extends Document {
 
     // Result (flexible field)
     result: any;
+
+    // Handoff tracking (for multi-agent coordination)
+    triggered_by?: Types.ObjectId;  // Previous agent action that triggered this
+    handoff_reason?: string;        // Why this agent was selected
 }
 
 const AgentActionSchema = new Schema<IAgentAction>({
@@ -34,7 +38,7 @@ const AgentActionSchema = new Schema<IAgentAction>({
     // Agent Identity
     agent: {
         type: String,
-        enum: ['ARCHITECT', 'CRITIC', 'MEDIATOR'],
+        enum: ['ARCHITECT', 'CRITIC', 'CODE_CRITIC', 'VISION_CRITIC', 'MEDIATOR', 'PAYMENT'],
         required: true,
         index: true
     },
@@ -71,7 +75,7 @@ const AgentActionSchema = new Schema<IAgentAction>({
     // Metadata
     model_used: {
         type: String,
-        default: 'firefunction-v1'
+        default: 'firefunction-v2'
     },
     latency_ms: {
         type: Number,
@@ -85,6 +89,15 @@ const AgentActionSchema = new Schema<IAgentAction>({
     result: {
         type: Schema.Types.Mixed,
         default: {}
+    },
+
+    // Handoff tracking (for multi-agent coordination)
+    triggered_by: {
+        type: Schema.Types.ObjectId,
+        ref: 'AgentAction'
+    },
+    handoff_reason: {
+        type: String
     }
 });
 

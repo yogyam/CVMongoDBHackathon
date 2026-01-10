@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Revision, Project } from '../models';
 import { authenticateToken, requireRole } from '../middleware/auth';
-import { processRevisionWithCritic } from '../agents/critic';
-import { notifyClientOfVerifiedWork } from '../agents/mediator';
+import { coordinateRevisionReview } from '../agents/coordinator';
 
 const router = Router();
 
@@ -76,28 +75,24 @@ router.post('/', authenticateToken, requireRole(['FREELANCER']), async (req: Req
             }
         });
 
-        // Trigger Critic Agent asynchronously
+        // Trigger Agent Coordinator asynchronously (routes to appropriate critics)
         setImmediate(async () => {
-            console.log(`🔍 Critic Agent evaluating revision #${revisionNumber} for ${project.project_code}...`);
+            console.log(`🎯 Agent Coordinator evaluating revision #${revisionNumber} for ${project.project_code}...`);
 
-            const result = await processRevisionWithCritic(revision._id.toString());
+            const result = await coordinateRevisionReview(revision._id.toString());
 
-            if (result.success && result.score !== undefined) {
-                const scoreLevel = Math.round(result.score * 10);
-                console.log(`📊 Critic Agent scored revision #${revisionNumber}: ${scoreLevel}/10`);
+            if (result.success && result.combined_score !== undefined) {
+                const scoreLevel = Math.round(result.combined_score * 10);
+                console.log(`📊 Combined score: ${scoreLevel}/10`);
+                console.log(`🔗 Agent chain: ${result.agent_chain.join(' → ')}`);
 
-                // If score >= 0.8, trigger Mediator to notify client
-                if (result.score >= 0.8) {
-                    console.log(`🔔 Triggering Mediator Agent for high-quality submission...`);
-                    const notifyResult = await notifyClientOfVerifiedWork(revision._id.toString());
-                    if (notifyResult.success) {
-                        console.log(`✅ Client notification sent successfully`);
-                    }
+                if (result.visible_to_client) {
+                    console.log(`✅ Work visible to client - notification sent`);
                 } else {
                     console.log(`📝 Score below threshold (${scoreLevel}/10) - feedback sent to freelancer only`);
                 }
             } else {
-                console.error(`❌ Critic Agent failed: ${result.error}`);
+                console.error(`❌ Coordinator failed: ${result.error}`);
             }
         });
 

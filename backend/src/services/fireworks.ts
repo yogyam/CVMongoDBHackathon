@@ -6,6 +6,20 @@ const fireworksClient = new OpenAI({
     baseURL: 'https://api.fireworks.ai/inference/v1'
 });
 
+/**
+ * Model constants for multi-agent routing
+ */
+export const MODELS = {
+    /** General-purpose function calling and orchestration */
+    FIREFUNCTION: 'accounts/fireworks/models/firefunction-v2',
+    /** Code analysis, static analysis, logic verification */
+    QWEN_CODER: 'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
+    /** Vision/UI analysis (for future Vision Critic) */
+    LLAMA_VISION: 'accounts/fireworks/models/llama-v3p1-405b-instruct'
+} as const;
+
+export type ModelType = typeof MODELS[keyof typeof MODELS];
+
 export interface AgentResponse<T> {
     success: boolean;
     data?: T;
@@ -13,6 +27,7 @@ export interface AgentResponse<T> {
     reasoning?: string;
     latency_ms: number;
     tokens_used?: number;
+    model_used?: string;
 }
 
 /**
@@ -53,7 +68,8 @@ export async function callFireworksAI<T>(
             success: true,
             data: parsed,
             latency_ms: latency,
-            tokens_used: response.usage?.total_tokens
+            tokens_used: response.usage?.total_tokens,
+            model_used: model
         };
 
     } catch (error) {
