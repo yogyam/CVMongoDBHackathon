@@ -1,4 +1,6 @@
 import OpenAI from 'openai';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Fireworks AI uses OpenAI-compatible API
 const fireworksClient = new OpenAI({
@@ -11,11 +13,11 @@ const fireworksClient = new OpenAI({
  */
 export const MODELS = {
     /** General-purpose function calling and orchestration - Try common model names */
-    FIREFUNCTION: 'accounts/fireworks/models/firefunction-v2', // Fallback to Llama 3.1 8B
+    FIREFUNCTION: process.env.FIREFUNCTION_MODEL!, // Fallback to Llama 3.1 8B
     /** Code analysis, static analysis, logic verification */
-    QWEN_CODER: 'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
+    QWEN_CODER: process.env.QWEN_CODER_MODEL!,
     /** Vision/UI analysis (for future Vision Critic) */
-    LLAMA_VISION: 'accounts/fireworks/models/llama-v3p1-405b-instruct'
+    LLAMA_VISION: process.env.LLAMA_VISION_MODEL!,
 } as const;
 
 export type ModelType = typeof MODELS[keyof typeof MODELS];

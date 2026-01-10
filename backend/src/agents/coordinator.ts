@@ -31,8 +31,24 @@ function analyzeFileTypes(files: { filename: string }[]): { hasCode: boolean; ha
     let hasCode = false;
     let hasImages = false;
 
+    if (!files || files.length === 0) {
+        return { hasCode: false, hasImages: false };
+    }
+
     for (const file of files) {
-        const ext = file.filename.split('.').pop()?.toLowerCase() || '';
+        if (!file || !file.filename) {
+            continue;
+        }
+
+        // Get extension (handle files with multiple dots, e.g., "file.test.js")
+        const parts = file.filename.split('.');
+        const ext = parts.length > 1 ? parts.pop()?.toLowerCase() || '' : '';
+
+        // Also check if filename has no extension but might be a code file (e.g., Dockerfile, Makefile)
+        const filenameLower = file.filename.toLowerCase();
+        if (filenameLower === 'dockerfile' || filenameLower === 'makefile' || filenameLower.startsWith('makefile.')) {
+            hasCode = true;
+        }
 
         if (CODE_EXTENSIONS.includes(ext)) {
             hasCode = true;
@@ -70,8 +86,13 @@ export async function coordinateRevisionReview(
         }
 
         // Analyze file types
-        const { hasCode, hasImages } = analyzeFileTypes(revision.files);
         console.log(`📋 Coordinator: Analyzing revision #${revision.revision_number}`);
+        console.log(`   - Total files in revision: ${revision.files?.length || 0}`);
+        if (revision.files && revision.files.length > 0) {
+            console.log(`   - File names:`, revision.files.map(f => f.filename).join(', '));
+        }
+        
+        const { hasCode, hasImages } = analyzeFileTypes(revision.files || []);
         console.log(`   - Code files detected: ${hasCode}`);
         console.log(`   - Image files detected: ${hasImages}`);
 
@@ -112,12 +133,33 @@ export async function coordinateRevisionReview(
         } else if (visionCriticScore !== undefined) {
             combinedScore = visionCriticScore;
         } else {
-            return {
-                success: false,
-                error: 'No critics could analyze this revision',
-                visible_to_client: false,
-                agent_chain: agentChain
-            };
+            // Fallback: If no file type detected but files exist, assume code and try code critic
+            if (revision.files && revision.files.length > 0) {
+                console.log(`⚠️ No file type detected, but files exist. Attempting code analysis as fallback...`);
+                agentChain.push('CODE_CRITIC_FALLBACK');
+                
+                const codeResult = await processRevisionWithCodeCritic(revisionId);
+                
+                if (codeResult.success && codeResult.score !== undefined) {
+                    combinedScore = codeResult.score;
+                    codeCriticOutput = codeResult.output;
+                    console.log(`✅ Code Critic (fallback) score: ${Math.round(combinedScore * 10)}/10`);
+                } else {
+                    return {
+                        success: false,
+                        error: `No critics could analyze this revision. Files found but analysis failed: ${codeResult.error || 'Unknown error'}`,
+                        visible_to_client: false,
+                        agent_chain: agentChain
+                    };
+                }
+            } else {
+                return {
+                    success: false,
+                    error: 'No critics could analyze this revision: No files found in revision',
+                    visible_to_client: false,
+                    agent_chain: agentChain
+                };
+            }
         }
 
         // THE GATEKEEPER LOGIC: Only visible to client if score >= 0.8
