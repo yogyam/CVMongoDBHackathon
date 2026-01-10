@@ -302,7 +302,6 @@ export default function NewProjectPage() {
                                 <span className="animate-pulse">Creating...</span>
                             ) : (
                                 <>
-                                    <span>🚀</span>
                                     Create Project & Start Chat
                                 </>
                             )}
@@ -319,7 +318,7 @@ export default function NewProjectPage() {
             <div className="max-w-4xl mx-auto animate-fade-in h-[calc(100vh-4rem)] flex flex-col">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold mb-2">🗣️ Chat with Architect Agent</h1>
+                    <h1 className="text-2xl font-bold mb-2">Chat with Architect Agent</h1>
                     <p className="text-muted text-sm">Discuss your project requirements. The agent will ask questions to create a complete specification.</p>
                 </div>
 
@@ -345,7 +344,7 @@ export default function NewProjectPage() {
                                     }`}
                                 >
                                     <div className="text-sm font-medium mb-1">
-                                        {msg.role === 'user' ? 'You' : '🏗️ Architect Agent'}
+                                        {msg.role === 'user' ? 'You' : 'Architect Agent'}
                                     </div>
                                     <div className="whitespace-pre-wrap">{msg.content}</div>
                                     <div className="text-xs text-muted mt-2">
@@ -359,7 +358,6 @@ export default function NewProjectPage() {
                             <div className="flex justify-start">
                                 <div className="bg-card border border-border rounded-lg p-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="animate-pulse">💭</div>
                                         <span className="text-muted">Architect Agent is thinking...</span>
                                     </div>
                                 </div>
@@ -404,13 +402,13 @@ export default function NewProjectPage() {
                             <div className="mt-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between">
                                     <div className="text-sm text-muted">
-                                        ✅ The Architect Agent has gathered enough information
+                                        The Architect Agent has gathered enough information
                                     </div>
                                     <button
                                         onClick={generateRequirements}
                                         className="btn btn-primary"
                                     >
-                                        🎯 Generate Requirements Document
+                                        Generate Requirements Document
                                     </button>
                                 </div>
                             </div>
@@ -426,7 +424,6 @@ export default function NewProjectPage() {
         return (
             <div className="max-w-2xl mx-auto animate-fade-in text-center py-20">
                 <div className="glass-card p-12">
-                    <div className="text-6xl mb-6 animate-pulse">🏗️</div>
                     <h2 className="text-2xl font-bold mb-4">Generating Requirements Document</h2>
                     <p className="text-muted mb-8">
                         The Architect Agent is creating a structured requirements document based on your conversation...

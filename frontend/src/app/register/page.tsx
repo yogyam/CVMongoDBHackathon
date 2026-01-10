@@ -70,7 +70,6 @@ export default function RegisterPage() {
                                         : 'border-border hover:border-muted'
                                     }`}
                             >
-                                <div className="text-2xl mb-2">💼</div>
                                 <div className="font-semibold">Client</div>
                                 <div className="text-xs text-muted mt-1">Hire talent</div>
                             </button>
@@ -82,7 +81,6 @@ export default function RegisterPage() {
                                         : 'border-border hover:border-muted'
                                     }`}
                             >
-                                <div className="text-2xl mb-2">👩‍💻</div>
                                 <div className="font-semibold">Freelancer</div>
                                 <div className="text-xs text-muted mt-1">Do great work</div>
                             </button>

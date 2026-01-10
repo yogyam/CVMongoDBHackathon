@@ -49,6 +49,7 @@ export async function runCriticAgent(
     const filesFormatted = files.map(f =>
         `### File: ${f.filename} (${f.language})\n\`\`\`${f.language}\n${f.content}\n\`\`\``
     ).join('\n\n');
+    console.log(requirements.structured_brief);
 
     const userPrompt = `
 ## PROJECT REQUIREMENTS
@@ -80,6 +81,7 @@ Evaluate this submission against the requirements. Check:
 2. Is the code quality production-ready?
 3. Are there any bugs or security issues?
 4. Does it follow best practices for the tech stack?
+
 
 Score strictly - only 0.8+ should reach the client.
 Respond with the JSON schema specified.`;

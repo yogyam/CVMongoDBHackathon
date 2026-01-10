@@ -35,7 +35,7 @@ export default function FreelancerDashboard() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="glass-card p-5">
-                    <div className="text-3xl font-bold gradient-text">{projects.length}</div>
+                    <div className="text-3xl font-bold text-foreground">{projects.length}</div>
                     <div className="text-sm text-muted">Assigned Projects</div>
                 </div>
                 <div className="glass-card p-5">
@@ -93,7 +93,6 @@ export default function FreelancerDashboard() {
                     {inReview.length > 0 && (
                         <div className="mb-8">
                             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <span className="text-primary">🔍</span>
                                 Under Review
                             </h2>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -110,7 +109,6 @@ export default function FreelancerDashboard() {
                     {completed.length > 0 && (
                         <div>
                             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <span className="text-success">✓</span>
                                 Completed
                             </h2>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

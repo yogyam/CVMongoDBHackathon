@@ -9,8 +9,8 @@ interface SignInScreenProps {
 
 export default function SignInScreen({ onShowRegister }: SignInScreenProps) {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+    <main className="min-h-screen flex items-center justify-center bg-background">
+      <div className="max-w-md w-full bg-card border border-border rounded p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Syntropy Protocol

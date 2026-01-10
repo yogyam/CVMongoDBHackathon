@@ -34,7 +34,7 @@ export default function ClientDashboard() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="glass-card p-5">
-                    <div className="text-3xl font-bold gradient-text">{projects.length}</div>
+                    <div className="text-3xl font-bold text-foreground">{projects.length}</div>
                     <div className="text-sm text-muted">Total Projects</div>
                 </div>
                 <div className="glass-card p-5">
@@ -67,7 +67,6 @@ export default function ClientDashboard() {
                 </div>
             ) : projects.length === 0 ? (
                 <div className="glass-card p-12 text-center">
-                    <div className="text-4xl mb-4">🚀</div>
                     <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
                     <p className="text-muted mb-6">Create your first project to get started</p>
                     <a href="/client/projects/new" className="btn btn-primary">

@@ -121,7 +121,7 @@ export default function ClientProjectDetailPage() {
                                     <ul className="space-y-2">
                                         {project.requirements.acceptance_criteria.map((criterion, i) => (
                                             <li key={i} className="flex items-start gap-3 text-sm text-muted">
-                                                <span className="text-success mt-0.5">✓</span>
+                                                <span className="text-success mt-0.5">•</span>
                                                 {criterion}
                                             </li>
                                         ))}
@@ -137,7 +137,6 @@ export default function ClientProjectDetailPage() {
 
                         {revisions.length === 0 ? (
                             <div className="text-center py-8 text-muted">
-                                <div className="text-3xl mb-2">📋</div>
                                 <p>No verified submissions yet</p>
                                 <p className="text-sm">You&apos;ll see work here once it passes quality verification (score ≥ 8)</p>
                             </div>
@@ -173,7 +172,7 @@ export default function ClientProjectDetailPage() {
                                                     }}
                                                     className="btn btn-primary flex-1"
                                                 >
-                                                    ✓ Approve
+                                                    Approve
                                                 </button>
                                                 <button
                                                     onClick={() => {

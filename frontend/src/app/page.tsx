@@ -45,7 +45,7 @@ export default function Home() {
 
           {/* Headline */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            <span className="gradient-text">Syntropy</span>
+            <span className="text-foreground">Syntropy</span>
             <br />
             <span className="text-foreground">Protocol</span>
           </h1>
@@ -57,16 +57,13 @@ export default function Home() {
 
           {/* Agent Pills */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <span className="text-lg">🏗️</span>
+            <div className="glass-card px-4 py-2">
               <span className="text-sm font-medium">Architect Agent</span>
             </div>
-            <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <span className="text-lg">🔍</span>
+            <div className="glass-card px-4 py-2">
               <span className="text-sm font-medium">Critic Agent</span>
             </div>
-            <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <span className="text-lg">📧</span>
+            <div className="glass-card px-4 py-2">
               <span className="text-sm font-medium">Mediator Agent</span>
             </div>
           </div>
@@ -88,25 +85,16 @@ export default function Home() {
         {/* Features Grid */}
         <div className="relative z-10 mt-24 grid md:grid-cols-3 gap-6 max-w-5xl mx-auto px-6">
           <div className="glass-card p-6">
-            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">🎯</span>
-            </div>
             <h3 className="text-lg font-semibold mb-2">Gatekeeper Pattern</h3>
             <p className="text-muted text-sm">AI critics verify work quality. Only submissions scoring ≥8/10 reach clients.</p>
           </div>
 
           <div className="glass-card p-6">
-            <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">🤖</span>
-            </div>
             <h3 className="text-lg font-semibold mb-2">Multi-Agent Coordination</h3>
             <p className="text-muted text-sm">Specialized agents collaborate via MongoDB to handle the full project lifecycle.</p>
           </div>
 
           <div className="glass-card p-6">
-            <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">💸</span>
-            </div>
             <h3 className="text-lg font-semibold mb-2">Autonomous Payments</h3>
             <p className="text-muted text-sm">USDC escrow with automatic release upon verified work approval.</p>
           </div>

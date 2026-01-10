@@ -33,7 +33,7 @@ export default function ClientProjectsPage() {
                     <p className="text-muted">View and manage all your projects</p>
                 </div>
                 <Link href="/client/projects/new" className="btn btn-primary">
-                    ➕ Create New Project
+                    Create New Project
                 </Link>
             </div>
 
@@ -43,7 +43,7 @@ export default function ClientProjectsPage() {
                 </div>
             ) : error ? (
                 <div className="glass-card p-6 text-center">
-                    <div className="text-danger mb-2">⚠️ Error loading projects</div>
+                    <div className="text-danger mb-2">Error loading projects</div>
                     <p className="text-muted">{error}</p>
                 </div>
             ) : projects.length === 0 ? (
