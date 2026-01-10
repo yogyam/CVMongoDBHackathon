@@ -5,6 +5,7 @@ import connectDB from './config/database';
 import authRoutes from './routes/auth';
 import projectRoutes from './routes/projects';
 import revisionRoutes from './routes/revisions';
+import paymentRoutes from './routes/payments';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,8 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/revisions', revisionRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
