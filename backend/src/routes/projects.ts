@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Types } from 'mongoose';
-import { Project, User } from '../models';
+import { Project, User, Revision } from '../models';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { processProjectWithArchitect } from '../agents/architect';
 import { processRequirementsChange } from '../agents/delta-analyzer';
@@ -381,6 +381,50 @@ router.put('/:id/requirements', authenticateToken, requireRole(['CLIENT']), asyn
 
     } catch (error) {
         console.error('Update requirements error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// DELETE /api/projects/:id - Delete project (Client only)
+router.delete('/:id', authenticateToken, requireRole(['CLIENT']), async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        
+        // Get the project first to verify ownership
+        const project = await Project.findById(id);
+        if (!project) {
+            res.status(404).json({ error: 'Project not found' });
+            return;
+        }
+
+        // Verify client owns the project
+        if (project.client_id.toString() !== req.user!.userId) {
+            res.status(403).json({ error: 'You can only delete your own projects' });
+            return;
+        }
+
+        // Check if project can be deleted (prevent deletion if work is already approved/completed)
+        if (['APPROVED', 'COMPLETED'].includes(project.status)) {
+            res.status(400).json({ 
+                error: 'Cannot delete approved or completed projects',
+                status: project.status 
+            });
+            return;
+        }
+
+        // Delete related revisions first
+        await Revision.deleteMany({ project_id: id });
+        
+        // Delete the project
+        await Project.findByIdAndDelete(id);
+
+        res.status(200).json({
+            message: 'Project deleted successfully',
+            project_code: project.project_code
+        });
+
+    } catch (error) {
+        console.error('Delete project error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

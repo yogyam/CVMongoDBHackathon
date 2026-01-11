@@ -29,6 +29,10 @@ export default function ClientProjectDetailPage() {
     const [changeReason, setChangeReason] = useState('');
     const [deltaResult, setDeltaResult] = useState<any>(null);
 
+    // Delete confirmation state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     useEffect(() => {
         if (token && id) {
             Promise.all([
@@ -139,6 +143,22 @@ export default function ClientProjectDetailPage() {
         setEditedCriteria(editedCriteria.filter((_, i) => i !== index));
     };
 
+    const handleDeleteProject = async () => {
+        if (!token || !project) return;
+        setDeleteLoading(true);
+        setError('');
+
+        try {
+            await projectsApi.delete(project._id || project.id, token);
+            router.push('/client/projects');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to delete project');
+            setShowDeleteConfirm(false);
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
     const handleCriterionChange = (index: number, value: string) => {
         const updated = [...editedCriteria];
         updated[index] = value;
@@ -181,7 +201,18 @@ export default function ClientProjectDetailPage() {
                 </div>
                 <div className="text-right">
                     <div className="badge badge-primary mb-2">{project.status.replace(/_/g, ' ')}</div>
-                    <div className="text-2xl font-bold">${project.budget_usdc} <span className="text-sm text-muted">USDC</span></div>
+                    <div className="text-2xl font-bold mb-3">${project.budget_usdc} <span className="text-sm text-muted">USDC</span></div>
+                    
+                    {/* Delete button - only show for non-approved/completed projects */}
+                    {!['APPROVED', 'COMPLETED'].includes(project.status) && (
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="btn btn-danger btn-sm"
+                            title="Delete Project"
+                        >
+                            🗑️ Delete
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -540,6 +571,45 @@ export default function ClientProjectDetailPage() {
                                 className="btn btn-primary flex-1"
                             >
                                 {actionLoading ? 'Processing...' : showFeedbackModal === 'approve' ? 'Approve' : 'Submit'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+                    <div className="glass-card p-6 max-w-md w-full">
+                        <h3 className="text-xl font-semibold mb-4 text-danger">Delete Project?</h3>
+                        
+                        <div className="mb-6">
+                            <p className="text-muted mb-2">
+                                Are you sure you want to delete <strong>{project.title}</strong>?
+                            </p>
+                            <p className="text-sm text-muted">
+                                This action cannot be undone. All project data and revisions will be permanently removed.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                disabled={deleteLoading}
+                                className="btn btn-secondary flex-1"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteProject}
+                                disabled={deleteLoading}
+                                className="btn btn-danger flex-1"
+                            >
+                                {deleteLoading ? (
+                                    <span className="animate-pulse">Deleting...</span>
+                                ) : (
+                                    'Delete Project'
+                                )}
                             </button>
                         </div>
                     </div>

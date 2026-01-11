@@ -78,6 +78,9 @@ export const projects = {
 
     requestChanges: (id: string, revisionId: string, changes: string, token: string) =>
         apiFetch('/api/projects/' + id + '/request-changes', { method: 'POST', body: JSON.stringify({ revision_id: revisionId, changes_requested: changes }), token }),
+
+    delete: (id: string, token: string) =>
+        apiFetch<{ message: string; project_code: string }>(`/api/projects/${id}`, { method: 'DELETE', token }),
 };
 
 // Revisions
