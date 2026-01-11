@@ -33,10 +33,6 @@ export function ProjectCard({ project, role }: ProjectCardProps) {
                 </div>
 
                 <div className="flex items-center gap-6 text-sm text-muted">
-                    <div className="flex items-center gap-2">
-                        <span>💰</span>
-                        <span>${project.budget_usdc} USDC</span>
-                    </div>
 
                     {project.current_revision !== undefined && project.current_revision > 0 && (
                         <div className="flex items-center gap-2">

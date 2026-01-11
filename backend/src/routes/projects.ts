@@ -11,19 +11,14 @@ const router = Router();
 // POST /api/projects - Create a new project (Client only)
 router.post('/', authenticateToken, requireRole(['CLIENT']), async (req: Request, res: Response): Promise<void> => {
     try {
-        const { title, description, freelancer_email, budget_usdc } = req.body;
+        const { title, description, freelancer_email } = req.body;
 
         // Validation
-        if (!title || !description || !freelancer_email || !budget_usdc) {
+        if (!title || !description || !freelancer_email) {
             res.status(400).json({
                 error: 'Missing required fields',
-                required: ['title', 'description', 'freelancer_email', 'budget_usdc']
+                required: ['title', 'description', 'freelancer_email']
             });
-            return;
-        }
-
-        if (budget_usdc <= 0) {
-            res.status(400).json({ error: 'Budget must be greater than 0' });
             return;
         }
 
@@ -42,8 +37,8 @@ router.post('/', authenticateToken, requireRole(['CLIENT']), async (req: Request
             freelancer_email: freelancer_email.toLowerCase(),
             title,
             raw_description: description,
-            budget_usdc,
-            original_budget_usdc: budget_usdc, // Store original budget for delta analysis
+            budget_usdc: 0,
+            original_budget_usdc: 0, // Store original budget for delta analysis
             status: 'CREATED',
             payment_status: 'ESCROWED'
         });

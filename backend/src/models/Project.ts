@@ -110,7 +110,7 @@ const ProjectSchema = new Schema<IProject>({
         estimated_hours: Number,
         architect_reasoning: String
     },
-    
+
     // Requirements History & Versioning
     requirements_history: [{
         version: {
@@ -185,12 +185,10 @@ const ProjectSchema = new Schema<IProject>({
     // Budget & Delta Management
     original_budget_usdc: {
         type: Number,
-        required: true,
         min: 0
     },
     budget_usdc: {
         type: Number,
-        required: true,
         min: 0
     },
     released_usdc: {

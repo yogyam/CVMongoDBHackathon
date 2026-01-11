@@ -45,12 +45,6 @@ export default function ClientDashboard() {
                     <div className="text-3xl font-bold text-success">{completedProjects.length}</div>
                     <div className="text-sm text-muted">Completed</div>
                 </div>
-                <div className="glass-card p-5">
-                    <div className="text-3xl font-bold text-secondary">
-                        ${projects.reduce((sum, p) => sum + (p.budget_usdc || 0), 0)}
-                    </div>
-                    <div className="text-sm text-muted">Total Budget</div>
-                </div>
             </div>
 
             {/* Error */}

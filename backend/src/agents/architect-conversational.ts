@@ -18,6 +18,7 @@ export interface ArchitectOutput {
     acceptance_criteria: string[];
     technical_stack: string[];
     estimated_hours: number;
+    suggested_price: number;
     reasoning: string;
 }
 
@@ -62,7 +63,8 @@ You must ALWAYS respond with valid JSON matching this exact schema:
   "acceptance_criteria": ["string array of specific, testable requirements"],
   "technical_stack": ["string array of recommended technologies"],
   "estimated_hours": number,
-  "reasoning": "string explaining your assumptions and decisions"
+  "suggested_price": number (in USDC, based on complexity, hours, and market rates),
+  "reasoning": "string explaining your assumptions, decisions, and pricing calculation"
 }`;
 
 /**
@@ -231,7 +233,6 @@ export async function generateRequirementsFromConversation(
 
     const userPrompt = `
 PROJECT TITLE: ${project.title}
-BUDGET: $${project.budget_usdc} USDC
 
 FULL CONVERSATION WITH CLIENT:
 ${fullConversation}
@@ -254,6 +255,8 @@ Based on this conversation, generate a comprehensive technical specification. Ex
                     estimated_hours: result.data.estimated_hours,
                     architect_reasoning: result.data.reasoning
                 },
+                budget_usdc: result.data.suggested_price,
+                original_budget_usdc: result.data.suggested_price,
                 status: 'REQUIREMENTS_GENERATED',
                 requirements_generated_at: new Date()
             }
