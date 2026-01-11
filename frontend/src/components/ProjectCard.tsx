@@ -35,23 +35,21 @@ export function ProjectCard({ project, role }: ProjectCardProps) {
                 <div className="flex items-center gap-6 text-sm text-muted">
 
                     {project.current_revision !== undefined && project.current_revision > 0 && (
-                        <div className="flex items-center gap-2">
-                            <span>📝</span>
-                            <span>Rev #{project.current_revision}</span>
+                        <div>
+                            Rev #{project.current_revision}
                         </div>
                     )}
 
                     {project.highest_score !== undefined && project.highest_score > 0 && (
-                        <div className="flex items-center gap-2">
-                            <span>⭐</span>
-                            <span>{Math.round(project.highest_score * 10)}/10</span>
+                        <div>
+                            {Math.round(project.highest_score * 10)}/10
                         </div>
                     )}
                 </div>
 
                 {project.requirements?.estimated_hours && (
                     <div className="mt-4 pt-4 border-t border-border text-sm text-muted">
-                        <span>⏱️ Est. {project.requirements.estimated_hours} hours</span>
+                        Est. {project.requirements.estimated_hours} hours
                     </div>
                 )}
             </div>

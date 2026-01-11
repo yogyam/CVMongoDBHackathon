@@ -5,6 +5,7 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 import { processProjectWithArchitect } from '../agents/architect';
 import { processRequirementsChange } from '../agents/delta-analyzer';
 import { generateProjectCode } from '../utils/helpers';
+import { triggerAutomaticPayment } from '../agents/payment';
 
 const router = Router();
 
@@ -198,6 +199,36 @@ router.post('/:id/approve', authenticateToken, requireRole(['CLIENT']), async (r
             return;
         }
 
+        // Try to trigger payment if possible (but don't block approval if it fails)
+        const client = await User.findById(req.user!.userId);
+        const freelancer = await User.findById(project.freelancer_id);
+
+        // Check if payment was already triggered for this revision
+        const existingPayment = await PaymentLedger.findOne({
+            project_id: project._id,
+            transaction_type: 'MILESTONE_RELEASE',
+            'notes': { $regex: `revision.*${revision.revision_number}` }
+        });
+
+        let paymentResult = null;
+        if (!existingPayment && client?.wallet_address && freelancer?.wallet_address) {
+            // Try to trigger payment if wallets are connected, but don't block if it fails
+            try {
+                console.log(`💰 Attempting to trigger payment for revision #${revision.revision_number}...`);
+                paymentResult = await triggerAutomaticPayment(revision._id.toString());
+                if (paymentResult.success) {
+                    console.log(`✅ Payment triggered successfully for revision #${revision.revision_number}`);
+                } else {
+                    console.warn(`⚠️ Payment trigger failed for revision #${revision.revision_number}: ${paymentResult.error}`);
+                }
+            } catch (error) {
+                console.error('Error triggering payment (non-blocking):', error);
+            }
+        } else if (existingPayment) {
+            // Payment was already triggered
+            paymentResult = { success: true, streamId: existingPayment.x402_stream_id, amount: existingPayment.amount_usdc };
+        }
+
         // Approve the revision
         await Revision.findByIdAndUpdate(revision._id, {
             $set: {
@@ -208,20 +239,38 @@ router.post('/:id/approve', authenticateToken, requireRole(['CLIENT']), async (r
         });
 
         // Complete the project
+        const updateData: {
+            status: string;
+            completed_at: Date;
+            payment_status?: string;
+            released_usdc?: number;
+        } = {
+            status: 'COMPLETED',
+            completed_at: new Date()
+        };
+
+        // Only update payment status if payment was successfully triggered
+        if (paymentResult && paymentResult.success) {
+            updateData.payment_status = 'RELEASED';
+            updateData.released_usdc = project.budget_usdc;
+        } else {
+            // Keep existing payment status if payment wasn't triggered
+            updateData.payment_status = project.payment_status || 'PENDING';
+        }
+
         await Project.findByIdAndUpdate(project._id, {
-            $set: {
-                status: 'COMPLETED',
-                payment_status: 'RELEASED',
-                released_usdc: project.budget_usdc,
-                completed_at: new Date()
-            }
+            $set: updateData
         });
 
         res.json({
             message: 'Project approved successfully',
-            payment: {
+            payment: paymentResult ? {
                 status: 'RELEASED',
-                amount_usdc: project.budget_usdc
+                amount_usdc: project.budget_usdc,
+                stream_id: paymentResult.streamId
+            } : {
+                status: 'PENDING',
+                message: 'Payment will be processed when wallets are connected'
             }
         });
 

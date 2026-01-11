@@ -161,25 +161,24 @@ router.post('/link-wallet', async (req: Request, res: Response): Promise<void> =
 
         const { wallet_address, cdp_user_id, wallet_network } = req.body;
 
-        // Validation
-        if (!wallet_address) {
-            res.status(400).json({ error: 'Wallet address is required' });
-            return;
-        }
+        // Allow disconnecting wallet by sending empty/null wallet_address
+        const isDisconnecting = !wallet_address || wallet_address === '';
 
-        // Validate wallet address format (Ethereum address)
-        if (!/^0x[a-fA-F0-9]{40}$/.test(wallet_address)) {
-            res.status(400).json({ error: 'Invalid wallet address format' });
-            return;
-        }
+        if (!isDisconnecting) {
+            // Validate wallet address format (Ethereum address) only if connecting
+            if (!/^0x[a-fA-F0-9]{40}$/.test(wallet_address)) {
+                res.status(400).json({ error: 'Invalid wallet address format' });
+                return;
+            }
 
-        // Validate network if provided
-        if (wallet_network && !['base-sepolia', 'base', 'ethereum-sepolia', 'ethereum'].includes(wallet_network)) {
-            res.status(400).json({ 
-                error: 'Invalid network',
-                allowed: ['base-sepolia', 'base', 'ethereum-sepolia', 'ethereum']
-            });
-            return;
+            // Validate network if provided
+            if (wallet_network && !['base-sepolia', 'base', 'ethereum-sepolia', 'ethereum'].includes(wallet_network)) {
+                res.status(400).json({ 
+                    error: 'Invalid network',
+                    allowed: ['base-sepolia', 'base', 'ethereum-sepolia', 'ethereum']
+                });
+                return;
+            }
         }
 
         // Find user
@@ -189,20 +188,29 @@ router.post('/link-wallet', async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-        // Check if wallet is already linked to another account
-        const existingWallet = await User.findOne({ 
-            wallet_address: wallet_address.toLowerCase(),
-            _id: { $ne: user._id }
-        });
-        if (existingWallet) {
-            res.status(409).json({ error: 'This wallet is already linked to another account' });
-            return;
+        // Check if wallet is already linked to another account (only if connecting, not disconnecting)
+        if (!isDisconnecting) {
+            const existingWallet = await User.findOne({ 
+                wallet_address: wallet_address.toLowerCase(),
+                _id: { $ne: user._id }
+            });
+            if (existingWallet) {
+                res.status(409).json({ error: 'This wallet is already linked to another account' });
+                return;
+            }
         }
 
         // Update user with wallet information
-        user.wallet_address = wallet_address.toLowerCase();
-        if (cdp_user_id) user.cdp_user_id = cdp_user_id;
-        if (wallet_network) user.wallet_network = wallet_network;
+        // Allow disconnecting wallet by sending empty string
+        if (isDisconnecting) {
+            user.wallet_address = undefined;
+            user.cdp_user_id = undefined;
+            user.wallet_network = undefined;
+        } else {
+            user.wallet_address = wallet_address.toLowerCase();
+            if (cdp_user_id) user.cdp_user_id = cdp_user_id;
+            if (wallet_network) user.wallet_network = wallet_network;
+        }
         
         await user.save();
 

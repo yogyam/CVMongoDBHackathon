@@ -303,7 +303,7 @@ export default function FreelancerProjectDetailPage() {
                             onClick={() => setShowSubmitForm(true)}
                             className="btn btn-primary"
                         >
-                            📤 Submit Work
+                            Submit Work
                         </button>
                     )}
                 </div>
@@ -320,20 +320,20 @@ export default function FreelancerProjectDetailPage() {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Requirements */}
                     {project.requirements && (
-                        <div className="glass-card p-6">
-                            <h2 className="text-xl font-semibold mb-4">Requirements</h2>
+                        <div className="glass-card p-6 border-l-2 border-l-primary">
+                            <h2 className="text-xl font-semibold mb-4 text-primary">Requirements</h2>
                             <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap text-muted">
                                 {project.requirements.structured_brief}
                             </div>
 
                             {project.requirements.acceptance_criteria && project.requirements.acceptance_criteria.length > 0 && (
                                 <div className="mt-6">
-                                    <h3 className="font-semibold mb-3">Acceptance Criteria</h3>
+                                    <h3 className="font-semibold mb-3 text-foreground">Acceptance Criteria</h3>
                                     <ul className="space-y-2">
                                         {project.requirements.acceptance_criteria.map((criterion, i) => (
-                                            <li key={i} className="flex items-start gap-3 text-sm text-muted">
-                                                <span className="text-primary mt-0.5">○</span>
-                                                {criterion}
+                                            <li key={i} className="flex items-start gap-3 text-sm">
+                                                <span className="text-primary mt-0.5 font-bold">•</span>
+                                                <span className="text-foreground">{criterion}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -342,7 +342,7 @@ export default function FreelancerProjectDetailPage() {
 
                             {project.requirements.technical_stack && project.requirements.technical_stack.length > 0 && (
                                 <div className="mt-6">
-                                    <h3 className="font-semibold mb-3">Tech Stack</h3>
+                                    <h3 className="font-semibold mb-3 text-foreground">Tech Stack</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {project.requirements.technical_stack.map((tech, i) => (
                                             <span key={i} className="badge badge-secondary">{tech}</span>
@@ -354,19 +354,30 @@ export default function FreelancerProjectDetailPage() {
                     )}
 
                     {/* Revisions */}
-                    <div className="glass-card p-6">
-                        <h2 className="text-xl font-semibold mb-4">My Submissions</h2>
+                    <div className="glass-card p-6 border-l-2 border-l-secondary">
+                        <h2 className="text-xl font-semibold mb-4 text-secondary">My Submissions</h2>
 
                         {revisions.length === 0 ? (
                             <div className="text-center py-8 text-muted">
-                                <div className="text-3xl mb-2">📝</div>
                                 <p>No submissions yet</p>
                                 <p className="text-sm">Click "Submit Work" to upload your first revision</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {revisions.map((revision) => (
-                                    <div key={revision._id} className="p-4 rounded-xl bg-card border border-border">
+                                {revisions.map((revision) => {
+                                    const score = revision.critic_score;
+                                    const borderColor = revision.status === 'PENDING_REVIEW' 
+                                        ? 'border-info/30' 
+                                        : score >= 0.8 
+                                            ? 'border-success/30' 
+                                            : score >= 0.5 
+                                                ? 'border-warning/30' 
+                                                : score > 0 
+                                                    ? 'border-danger/30' 
+                                                    : 'border-border';
+                                    
+                                    return (
+                                    <div key={revision._id} className={`p-4 rounded-xl bg-card border ${borderColor}`}>
                                         <div className="flex items-start justify-between mb-3">
                                             <div>
                                                 <div className="font-semibold">Revision #{revision.revision_number}</div>
@@ -374,9 +385,26 @@ export default function FreelancerProjectDetailPage() {
                                                     {new Date(revision.submitted_at).toLocaleString()}
                                                 </div>
                                             </div>
-                                            {revision.critic_score > 0 && (
-                                                <ScoreBadge score={revision.critic_score} size="sm" />
-                                            )}
+                                            {/* Always show score */}
+                                            <div className="flex flex-col items-end gap-2">
+                                                {revision.status === 'PENDING_REVIEW' ? (
+                                                    <div className="px-3 py-1 rounded text-xs bg-info/10 border border-info/30 text-info">
+                                                        Pending Review
+                                                    </div>
+                                                ) : revision.critic_score > 0 ? (
+                                                    <>
+                                                        <ScoreBadge score={revision.critic_score} size="sm" />
+                                                        <div className={`text-xs font-medium ${
+                                                            score >= 0.8 ? 'text-success' : 
+                                                            score >= 0.5 ? 'text-warning' : 'text-danger'
+                                                        }`}>
+                                                            {Math.round(revision.critic_score * 10)}/10
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-xs text-muted">No score yet</div>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {revision.notes && (
@@ -388,56 +416,94 @@ export default function FreelancerProjectDetailPage() {
                                             {revision.files.map(f => f.filename).join(', ')}
                                         </div>
 
-                                        {/* Feedback Section */}
-                                        {revision.critic_feedback && (
-                                            <div className="mt-4 pt-4 border-t border-border">
-                                                <div className="text-sm font-medium mb-2 flex items-center gap-2">
-                                                    🔍 Critic Feedback
-                                                </div>
-                                                <p className="text-sm text-muted mb-3">{revision.critic_feedback}</p>
-
+                                        {/* Score and Missing Items Section */}
+                                        {revision.status === 'REVIEWED' && (
+                                            <div className="mt-4 pt-4 border-t border-border space-y-4">
+                                                {/* What's Missing Section - Blockers */}
                                                 {revision.blockers && revision.blockers.length > 0 && (
-                                                    <div className="mb-3">
-                                                        <div className="text-xs font-medium text-danger mb-1">Blockers:</div>
-                                                        <ul className="text-sm text-muted space-y-1">
+                                                    <div className="p-3 bg-danger/10 border border-danger/30 rounded">
+                                                        <div className="text-sm font-semibold text-danger mb-2">
+                                                            What's Missing
+                                                        </div>
+                                                        <ul className="text-sm space-y-2">
                                                             {revision.blockers.map((b, i) => (
-                                                                <li key={i} className="flex items-start gap-2">
-                                                                    <span className="text-danger">•</span> {b}
+                                                                <li key={i} className="flex items-start gap-2 text-foreground">
+                                                                    <span className="text-danger mt-0.5">•</span>
+                                                                    <span>{b}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                        <div className="text-xs text-muted mt-2">
+                                                            Fix these issues to improve your score
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Suggestions */}
+                                                {revision.suggestions && revision.suggestions.length > 0 && (
+                                                    <div className="p-3 bg-warning/5 border border-warning/20 rounded">
+                                                        <div className="text-sm font-medium mb-2 text-warning">Improvements</div>
+                                                        <ul className="text-sm space-y-1">
+                                                            {revision.suggestions.map((s, i) => (
+                                                                <li key={i} className="flex items-start gap-2 text-foreground">
+                                                                    <span className="text-warning mt-0.5">•</span> {s}
                                                                 </li>
                                                             ))}
                                                         </ul>
                                                     </div>
                                                 )}
 
-                                                {revision.suggestions && revision.suggestions.length > 0 && (
-                                                    <div>
-                                                        <div className="text-xs font-medium text-warning mb-1">Suggestions:</div>
-                                                        <ul className="text-sm text-muted space-y-1">
-                                                            {revision.suggestions.map((s, i) => (
-                                                                <li key={i} className="flex items-start gap-2">
-                                                                    <span className="text-warning">•</span> {s}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
+                                                {/* Feedback */}
+                                                {revision.critic_feedback && (
+                                                    <div className="p-3 bg-primary/5 border border-primary/20 rounded">
+                                                        <div className="text-sm font-medium mb-2 text-primary">Feedback</div>
+                                                        <p className="text-sm text-foreground">{revision.critic_feedback}</p>
                                                     </div>
                                                 )}
+
+                                                {/* Success message if no blockers */}
+                                                {(!revision.blockers || revision.blockers.length === 0) && (
+                                                    <div className="p-3 bg-success/10 border border-success/30 rounded">
+                                                        <div className="text-sm font-semibold text-success mb-1">
+                                                            No Critical Issues
+                                                        </div>
+                                                        <p className="text-xs text-muted">
+                                                            Your submission doesn't have any blockers. {revision.visible_to_client 
+                                                                ? 'This work is visible to the client.' 
+                                                                : 'Keep improving to reach the 8/10 threshold.'}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Pending Review State */}
+                                        {revision.status === 'PENDING_REVIEW' && (
+                                            <div className="mt-4 pt-4 border-t border-border">
+                                                <div className="p-3 bg-info/10 border border-info/30 rounded">
+                                                    <div className="text-sm font-medium text-info mb-1">Review in Progress</div>
+                                                    <p className="text-xs text-muted">
+                                                        Your submission is being reviewed by the Critic Agent. You'll receive detailed feedback once the review is complete.
+                                                    </p>
+                                                </div>
                                             </div>
                                         )}
 
                                         {/* Status indicators */}
                                         <div className="mt-3 flex items-center gap-3 text-xs">
                                             {revision.visible_to_client ? (
-                                                <span className="text-success flex items-center gap-1">
-                                                    ✓ Visible to client
+                                                <span className="px-2 py-1 rounded bg-success/10 border border-success/30 text-success font-medium">
+                                                    Visible to client
                                                 </span>
-                                            ) : (
-                                                <span className="text-muted flex items-center gap-1">
-                                                    ○ Not visible to client (score &lt; 8)
+                                            ) : revision.status === 'REVIEWED' ? (
+                                                <span className="px-2 py-1 rounded bg-muted/10 border border-border text-muted">
+                                                    Not visible to client (score &lt; 8)
                                                 </span>
-                                            )}
+                                            ) : null}
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -473,7 +539,7 @@ export default function FreelancerProjectDetailPage() {
 
                     {/* Gatekeeper Info */}
                     <div className="glass-card p-6 border-l-4 border-l-primary">
-                        <h3 className="font-semibold mb-2">🎯 Gatekeeper Rules</h3>
+                        <h3 className="font-semibold mb-2">Gatekeeper Rules</h3>
                         <p className="text-sm text-muted">
                             Your work is reviewed by the Critic Agent. Only submissions scoring <span className="text-success font-medium">≥ 8/10</span> are shown to the client.
                         </p>
@@ -588,7 +654,7 @@ export default function FreelancerProjectDetailPage() {
                                 {submitting ? (
                                     <span className="animate-pulse">Submitting...</span>
                                 ) : (
-                                    '🚀 Submit for Review'
+                                    'Submit for Review'
                                 )}
                             </button>
                         </div>

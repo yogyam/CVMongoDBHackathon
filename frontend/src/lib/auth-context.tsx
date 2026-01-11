@@ -19,21 +19,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const storedToken = localStorage.getItem('token');
+    const refreshUser = async () => {
+        const storedToken = localStorage.getItem('token') || localStorage.getItem('syntropy_token');
         if (storedToken) {
-            authApi.me(storedToken)
-                .then((res) => {
-                    setUser(res.user);
-                    setToken(storedToken);
-                })
-                .catch(() => {
-                    localStorage.removeItem('token');
-                })
-                .finally(() => setIsLoading(false));
+            try {
+                const res = await authApi.me(storedToken);
+                setUser(res.user);
+                setToken(storedToken);
+            } catch {
+                localStorage.removeItem('token');
+                localStorage.removeItem('syntropy_token');
+            } finally {
+                setIsLoading(false);
+            }
         } else {
             setIsLoading(false);
         }
+    };
+
+    useEffect(() => {
+        refreshUser();
     }, []);
 
     const login = async (email: string, password: string) => {

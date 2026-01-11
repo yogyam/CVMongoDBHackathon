@@ -16,7 +16,13 @@ const CDP_CONFIG = {
 
 export default function Providers({ children }: ProvidersProps) {
   if (!CDP_CONFIG.projectId) {
-    console.error("NEXT_PUBLIC_CDP_PROJECT_ID is not set in environment variables");
+    console.error("⚠️ NEXT_PUBLIC_CDP_PROJECT_ID is not set in environment variables");
+    console.error("📝 Please add NEXT_PUBLIC_CDP_PROJECT_ID to your .env.local file");
+    console.error("🔗 Get your Project ID from: https://portal.cdp.coinbase.com");
+    
+    // Return children without CDP provider if project ID is missing
+    // This prevents network errors when CDP tries to connect
+    return <>{children}</>;
   }
 
   return (

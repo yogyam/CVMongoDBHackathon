@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { Revision, Project, AgentAction } from '../models';
 import { processRevisionWithCodeCritic, CodeCriticOutput } from './code-critic';
 import { notifyClientOfVerifiedWork } from './mediator';
+import { triggerAutomaticPayment } from './payment';
 
 export interface CoordinatorResult {
     success: boolean;
@@ -190,7 +191,7 @@ export async function coordinateRevisionReview(
             $set: { status: 'IN_REVIEW' }
         });
 
-        // If visible to client, trigger Mediator
+        // If visible to client, trigger Mediator and Payment Agent
         if (visibleToClient) {
             console.log(`🔔 Score >= 8/10 - Triggering Mediator Agent...`);
             agentChain.push('MEDIATOR');
@@ -200,6 +201,18 @@ export async function coordinateRevisionReview(
                 console.log(`✅ Client notification sent`);
             } else {
                 console.log(`⚠️ Mediator notification failed: ${notifyResult.error}`);
+            }
+
+            // Trigger automatic payment via Payment Agent
+            console.log(`💰 Score >= 8/10 - Triggering Payment Agent for automatic payment...`);
+            agentChain.push('PAYMENT_AGENT');
+
+            const paymentResult = await triggerAutomaticPayment(revisionId);
+            if (paymentResult.success) {
+                console.log(`✅ Automatic payment released: $${paymentResult.amount} USDC (Stream: ${paymentResult.streamId})`);
+            } else {
+                console.log(`⚠️ Automatic payment failed: ${paymentResult.error}`);
+                // Don't fail the entire flow if payment fails - it can be retried manually
             }
         } else {
             console.log(`📝 Score ${Math.round(combinedScore * 10)}/10 below threshold - feedback sent to freelancer only`);

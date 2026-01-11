@@ -95,6 +95,8 @@ export interface User {
     email: string;
     role: 'CLIENT' | 'FREELANCER';
     full_name: string;
+    wallet_address?: string;
+    wallet_network?: string;
 }
 
 export interface Project {
