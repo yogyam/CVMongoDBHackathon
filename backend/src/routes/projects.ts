@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { Project, User, PaymentLedger } from '../models';
+import { Types } from 'mongoose';
+import { Project, User } from '../models';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { processProjectWithArchitect } from '../agents/architect';
+import { processRequirementsChange } from '../agents/delta-analyzer';
 import { generateProjectCode } from '../utils/helpers';
 import { triggerAutomaticPayment } from '../agents/payment';
 
@@ -10,19 +12,14 @@ const router = Router();
 // POST /api/projects - Create a new project (Client only)
 router.post('/', authenticateToken, requireRole(['CLIENT']), async (req: Request, res: Response): Promise<void> => {
     try {
-        const { title, description, freelancer_email, budget_usdc } = req.body;
+        const { title, description, freelancer_email } = req.body;
 
         // Validation
-        if (!title || !description || !freelancer_email || !budget_usdc) {
+        if (!title || !description || !freelancer_email) {
             res.status(400).json({
                 error: 'Missing required fields',
-                required: ['title', 'description', 'freelancer_email', 'budget_usdc']
+                required: ['title', 'description', 'freelancer_email']
             });
-            return;
-        }
-
-        if (budget_usdc <= 0) {
-            res.status(400).json({ error: 'Budget must be greater than 0' });
             return;
         }
 
@@ -41,7 +38,8 @@ router.post('/', authenticateToken, requireRole(['CLIENT']), async (req: Request
             freelancer_email: freelancer_email.toLowerCase(),
             title,
             raw_description: description,
-            budget_usdc,
+            budget_usdc: 0,
+            original_budget_usdc: 0, // Store original budget for delta analysis
             status: 'CREATED',
             payment_status: 'ESCROWED'
         });
@@ -134,8 +132,9 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response): Promi
                     budget_usdc: project.budget_usdc,
                     payment_status: project.payment_status,
                     created_at: project.created_at,
-                    // Clients see requirements summary only
-                    requirements_summary: project.requirements?.structured_brief?.substring(0, 500)
+                    current_revision: project.current_revision,
+                    // Clients now see full requirements for editing
+                    requirements: project.requirements
                 }
             });
         } else {
@@ -337,6 +336,100 @@ router.post('/:id/request-changes', authenticateToken, requireRole(['CLIENT']), 
 
     } catch (error) {
         console.error('Request changes error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// PUT /api/projects/:id/requirements - Update project requirements (Client only)
+router.put('/:id/requirements', authenticateToken, requireRole(['CLIENT']), async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { structured_brief, acceptance_criteria, technical_stack, estimated_hours, change_reason } = req.body;
+
+        // Validation
+        if (!structured_brief || !acceptance_criteria || !Array.isArray(acceptance_criteria)) {
+            res.status(400).json({
+                error: 'Invalid requirements format',
+                required: ['structured_brief', 'acceptance_criteria (array)']
+            });
+            return;
+        }
+
+        // Get the project
+        const project = await Project.findById(id);
+        if (!project) {
+            res.status(404).json({ error: 'Project not found' });
+            return;
+        }
+
+        // Authorization check
+        if (project.client_id.toString() !== req.user!.userId) {
+            res.status(403).json({ error: 'You can only update your own projects' });
+            return;
+        }
+
+        // Check if project allows requirements updates
+        if (!['REQUIREMENTS_GENERATED', 'IN_PROGRESS'].includes(project.status)) {
+            res.status(400).json({
+                error: 'Requirements cannot be updated in current project status',
+                current_status: project.status,
+                allowed_statuses: ['REQUIREMENTS_GENERATED', 'IN_PROGRESS']
+            });
+            return;
+        }
+
+        // Check if requirements exist (can't update what doesn't exist)
+        if (!project.requirements) {
+            res.status(400).json({
+                error: 'No requirements to update',
+                message: 'Project requirements have not been generated yet'
+            });
+            return;
+        }
+
+        const oldRequirements = project.requirements;
+        const newRequirements = {
+            structured_brief,
+            acceptance_criteria,
+            technical_stack: technical_stack || oldRequirements.technical_stack,
+            estimated_hours: estimated_hours || oldRequirements.estimated_hours,
+            architect_reasoning: oldRequirements.architect_reasoning // Preserve original reasoning
+        };
+
+        // Process the requirements change with Delta Analysis
+        const changeResult = await processRequirementsChange(
+            id,
+            oldRequirements,
+            newRequirements,
+            change_reason || 'Client updated requirements',
+            new Types.ObjectId(req.user!.userId)
+        );
+
+        if (!changeResult.success) {
+            res.status(500).json({
+                error: 'Failed to update requirements',
+                message: changeResult.error
+            });
+            return;
+        }
+
+        // Get updated project
+        const updatedProject = await Project.findById(id);
+
+        res.status(200).json({
+            message: 'Requirements updated successfully',
+            project: {
+                id: updatedProject!._id,
+                requirements: updatedProject!.requirements,
+                requirements_version: updatedProject!.requirements_version
+            },
+            delta_analysis: changeResult.deltaAnalysis,
+            requires_approval: changeResult.requiresApproval,
+            pending_approval: updatedProject!.pending_delta_approval
+        });
+
+    } catch (error) {
+        console.error('Update requirements error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

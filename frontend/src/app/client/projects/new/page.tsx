@@ -31,13 +31,12 @@ export default function NewProjectPage() {
     // Project creation state
     const [step, setStep] = useState<'form' | 'chat' | 'generating'>('form');
     const [projectId, setProjectId] = useState<string | null>(null);
-    
+
     // Form fields
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [freelancerEmail, setFreelancerEmail] = useState('');
-    const [budget, setBudget] = useState('');
-    
+
     // Chat state
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState('');
@@ -62,13 +61,12 @@ export default function NewProjectPage() {
             const project = await projectsApi.create({
                 title,
                 description,
-                freelancer_email: freelancerEmail,
-                budget_usdc: parseFloat(budget)
+                freelancer_email: freelancerEmail
             }, token);
 
             setProjectId(project.project._id || project.project.id);
             setStep('chat');
-            
+
             // Start the conversation
             await startConversation(project.project._id || project.project.id);
         } catch (err) {
@@ -98,7 +96,7 @@ export default function NewProjectPage() {
             }
 
             const data = await response.json();
-            
+
             // Add initial messages
             setMessages([
                 {
@@ -148,7 +146,7 @@ export default function NewProjectPage() {
             }
 
             const data: ChatResponse = await response.json();
-            
+
             const assistantMessage: Message = {
                 role: 'assistant',
                 content: data.response,
@@ -264,25 +262,6 @@ export default function NewProjectPage() {
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="budget" className="block text-sm font-medium mb-2">
-                                Budget (USDC)
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">$</span>
-                                <input
-                                    id="budget"
-                                    type="number"
-                                    value={budget}
-                                    onChange={(e) => setBudget(e.target.value)}
-                                    className="input pl-8"
-                                    placeholder="500"
-                                    min="1"
-                                    step="0.01"
-                                    required
-                                />
-                            </div>
-                        </div>
                     </div>
 
                     <div className="flex gap-4 mt-8">
@@ -307,8 +286,8 @@ export default function NewProjectPage() {
                             )}
                         </button>
                     </div>
-                </form>
-            </div>
+                </form >
+            </div >
         );
     }
 
@@ -330,18 +309,17 @@ export default function NewProjectPage() {
                                 Starting conversation...
                             </div>
                         )}
-                        
+
                         {messages.map((msg, idx) => (
                             <div
                                 key={idx}
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[80%] rounded-lg p-4 ${
-                                        msg.role === 'user'
-                                            ? 'bg-primary/20 text-primary-foreground'
-                                            : 'bg-card border border-border'
-                                    }`}
+                                    className={`max-w-[80%] rounded-lg p-4 ${msg.role === 'user'
+                                        ? 'bg-primary/20 text-primary-foreground'
+                                        : 'bg-card border border-border'
+                                        }`}
                                 >
                                     <div className="text-sm font-medium mb-1">
                                         {msg.role === 'user' ? 'You' : 'Architect Agent'}
