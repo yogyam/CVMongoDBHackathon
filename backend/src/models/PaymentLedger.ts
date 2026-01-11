@@ -17,6 +17,7 @@ export interface IPaymentLedger extends Document {
     triggered_by: 'PAYMENT_AGENT' | 'CLIENT_APPROVAL' | 'MANUAL';
     created_at: Date;
     confirmed_at?: Date;
+    notes?: string;
 }
 
 const PaymentLedgerSchema = new Schema<IPaymentLedger>({
@@ -75,6 +76,9 @@ const PaymentLedgerSchema = new Schema<IPaymentLedger>({
     },
     confirmed_at: {
         type: Date
+    },
+    notes: {
+        type: String
     }
 });
 

@@ -10,6 +10,7 @@ export { runCriticAgent, processRevisionWithCritic } from './critic';
 export { runCodeCriticAgent, processRevisionWithCodeCritic } from './code-critic';
 export { runMediatorAgent, notifyClientOfVerifiedWork } from './mediator';
 export { coordinateRevisionReview } from './coordinator';
+export { triggerAutomaticPayment } from './payment';
 
 // Export types
 export type { ArchitectOutput } from './architect';

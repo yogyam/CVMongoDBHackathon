@@ -14,11 +14,13 @@ const clientNav: NavItem[] = [
     { label: 'Dashboard', href: '/client', icon: '' },
     { label: 'Projects', href: '/client/projects', icon: '' },
     { label: 'Create Project', href: '/client/projects/new', icon: '' },
+    { label: 'Settings', href: '/settings', icon: '' },
 ];
 
 const freelancerNav: NavItem[] = [
     { label: 'Dashboard', href: '/freelancer', icon: '' },
     { label: 'My Projects', href: '/freelancer/projects', icon: '' },
+    { label: 'Settings', href: '/settings', icon: '' },
 ];
 
 export function Sidebar() {

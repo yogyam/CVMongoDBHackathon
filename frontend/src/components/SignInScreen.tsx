@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthButton } from "@coinbase/cdp-react/components/AuthButton";
+import { AuthButton } from "@coinbase/cdp-react";
 import Link from "next/link";
 
 interface SignInScreenProps {
