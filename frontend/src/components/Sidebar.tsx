@@ -30,11 +30,11 @@ export function Sidebar() {
         <div className="sidebar">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                     <span className="text-white font-bold text-lg">S</span>
                 </div>
                 <div>
-                    <div className="font-bold text-lg gradient-text">Syntropy</div>
+                    <div className="font-bold text-lg gradient-text">OverHeadAI</div>
                     <div className="text-xs text-muted">Protocol</div>
                 </div>
             </Link>

@@ -116,7 +116,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-6 px-6">
         <div className="max-w-5xl mx-auto flex justify-between items-center text-sm text-muted">
-          <span>© 2026 Syntropy Protocol</span>
+          <span>© 2026 OverHeadAI</span>
           <span>Built with Fireworks AI + MongoDB</span>
         </div>
       </footer>

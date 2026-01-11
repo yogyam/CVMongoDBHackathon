@@ -12,7 +12,7 @@ export interface DeltaAnalysisOutput {
     recommendations: string[];
 }
 
-const DELTA_ANALYZER_SYSTEM_PROMPT = `You are the Delta Analysis Agent in Syntropy Protocol, an AI-powered freelance mediation platform.
+const DELTA_ANALYZER_SYSTEM_PROMPT = `You are the Delta Analysis Agent in OverHeadAI, an AI-powered freelance mediation platform.
 
 Your job is to analyze changes between old and new project requirements and calculate the cost impact in USDC.
 

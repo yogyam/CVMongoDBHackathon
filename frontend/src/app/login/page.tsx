@@ -45,7 +45,7 @@ export default function LoginPage() {
                         Back
                     </Link>
                     <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-                    <p className="text-muted">Sign in to your Syntropy account</p>
+                    <p className="text-muted">Sign in to your OverHeadAI account</p>
                 </div>
 
                 {/* Form */}

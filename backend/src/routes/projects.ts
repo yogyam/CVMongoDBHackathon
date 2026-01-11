@@ -22,9 +22,8 @@ router.post('/', authenticateToken, requireRole(['CLIENT']), async (req: Request
             return;
         }
 
-        // Generate project code
-        const projectCount = await Project.countDocuments();
-        const project_code = generateProjectCode(projectCount);
+        // Generate unique project code
+        const project_code = await generateProjectCode(Project);
 
         // Check if freelancer exists
         const freelancer = await User.findOne({ email: freelancer_email.toLowerCase() });

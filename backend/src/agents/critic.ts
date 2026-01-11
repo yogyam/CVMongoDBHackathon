@@ -10,7 +10,7 @@ export interface CriticOutput {
     reasoning: string;
 }
 
-const CRITIC_SYSTEM_PROMPT = `You are the Critic Agent in Syntropy Protocol, an AI-powered quality verification system.
+const CRITIC_SYSTEM_PROMPT = `You are the Critic Agent in OverHeadAI, an AI-powered quality verification system.
 
 Your job is to evaluate a freelancer's submitted work against the project requirements and score it on a scale of 0.0 to 1.0.
 

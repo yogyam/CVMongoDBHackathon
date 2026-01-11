@@ -9,7 +9,7 @@ export interface MediatorOutput {
     action_required: boolean;
 }
 
-const MEDIATOR_SYSTEM_PROMPT = `You are the Mediator Agent in Syntropy Protocol, responsible for communicating with clients professionally.
+const MEDIATOR_SYSTEM_PROMPT = `You are the Mediator Agent in OverHeadAI, responsible for communicating with clients professionally.
 
 Your job is to craft clear, professional notifications when a freelancer's work passes quality verification (score >= 0.8).
 

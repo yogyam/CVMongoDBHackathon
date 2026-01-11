@@ -10,7 +10,7 @@ export interface ArchitectOutput {
     reasoning: string;
 }
 
-const ARCHITECT_SYSTEM_PROMPT = `You are the Architect Agent in Syntropy Protocol, an AI-powered freelance mediation platform.
+const ARCHITECT_SYSTEM_PROMPT = `You are the Architect Agent in OverHeadAI, an AI-powered freelance mediation platform.
 
 Your job is to take a client's raw project description and generate a comprehensive, actionable technical brief that a freelancer can immediately understand and start working on.
 

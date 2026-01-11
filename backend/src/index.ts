@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 // Health check
 app.get('/', (req: Request, res: Response) => {
     res.json({
-        message: 'Syntropy Protocol API',
+        message: 'OverHeadAI API',
         version: '1.0.0',
         status: 'running',
         agents: ['Architect', 'Critic', 'Mediator']
@@ -51,7 +51,7 @@ const startServer = async () => {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`\n✨ Syntropy Protocol - Multi-Agent Freelance Mediation`);
+            console.log(`\n✨ OverHeadAI - Multi-Agent Freelance Mediation`);
             console.log(`\n🤖 Active Agents:`);
             console.log(`   - Architect: Converts ideas → requirements`);
             console.log(`   - Critic: Quality scoring (Gatekeeper)`);

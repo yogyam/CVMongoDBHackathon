@@ -1,4 +1,4 @@
-# How to Run Syntropy Protocol
+# How to Run OverHeadAI
 
 ## Step-by-Step Setup
 
@@ -141,8 +141,8 @@ If `@coinbase/cdp-react` and `@coinbase/cdp-hooks` aren't available, you can:
 
 1. Create a new CDP app using their template:
    ```bash
-   npm create @coinbase/cdp-app@latest syntropy-cdp
-   cd syntropy-cdp
+   npm create @coinbase/cdp-app@latest overheadai-cdp
+   cd overheadai-cdp
    ```
 2. Copy the `package.json` dependencies to your frontend
 3. Adapt the template's components to your needs

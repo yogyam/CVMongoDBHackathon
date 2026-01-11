@@ -10,7 +10,7 @@ interface ProvidersProps {
 // CDP Configuration
 const CDP_CONFIG = {
   projectId: process.env.NEXT_PUBLIC_CDP_PROJECT_ID || "",
-  appName: "Syntropy Protocol",
+  appName: "OverHeadAI",
   appLogoUrl: "/logo.svg",
 };
 

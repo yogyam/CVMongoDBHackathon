@@ -1,4 +1,4 @@
-# Syntropy Protocol - Technical PRD
+# OverHeadAI - Technical PRD
 
 > **Version**: 1.0 | **Status**: Hackathon Build | **Date**: January 2026
 
@@ -6,7 +6,7 @@
 
 ## 1. Executive Summary
 
-**Syntropy** is an autonomous mediation layer for the freelance economy. It eliminates "management overhead" by using a network of specialized AI agents that:
+**OverHeadAI** is an autonomous mediation layer for the freelance economy. It eliminates "management overhead" by using a network of specialized AI agents that:
 
 - **Negotiate requirements** with clients through conversational AI
 - **Verify work quality** before involving the client (Gatekeeper pattern)
@@ -533,7 +533,7 @@ When client requests work outside original spec:
 
 ## 13. Hackathon Pitch
 
-> "We are building **Syntropy**. Most marketplaces are just 'directories.' Syntropy is an **Active Mediator**. By using Fireworks AI for the brains and Coinbase x402 for the heart, we've created a system where the AI takes the blame for feedback, handles the stress of money, and lets humans just focus on the creative 'Aha!' moments."
+> "We are building **OverHeadAI**. Most marketplaces are just 'directories.' OverHeadAI is an **Active Mediator**. By using Fireworks AI for the brains and Coinbase x402 for the heart, we've created a system where the AI takes the blame for feedback, handles the stress of money, and lets humans just focus on the creative 'Aha!' moments."
 
 ---
 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Syntropy Protocol",
+  title: "OverHeadAI",
   description: "Multi-Agent Freelance Mediation Platform",
 };
 

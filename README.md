@@ -1,10 +1,10 @@
-# Syntropy Protocol 🚀
+# OverHeadAI 🚀
 
 An autonomous mediation layer for the freelance economy using multi-agent AI coordination and MongoDB Atlas.
 
 ## 🎯 Overview
 
-Syntropy is a multi-agent system where specialized AI agents (Architect, Critic, Mediator) collaborate using MongoDB as a shared coordination layer. The system:
+OverHeadAI is a multi-agent system where specialized AI agents (Architect, Critic, Mediator) collaborate using MongoDB as a shared coordination layer. The system:
 
 - **Eliminates management overhead** between clients and freelancers
 - **Uses the "Gatekeeper" pattern** - clients only see work that passes quality verification (Level 8+)

@@ -47,7 +47,7 @@ export default function RegisterPage() {
                         Back
                     </Link>
                     <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-                    <p className="text-muted">Join Syntropy Protocol</p>
+                    <p className="text-muted">Join OverHeadAI</p>
                 </div>
 
                 {/* Form */}

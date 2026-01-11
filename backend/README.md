@@ -1,4 +1,4 @@
-# Syntropy Protocol - Backend Setup
+# OverHeadAI - Backend Setup
 
 ## Prerequisites
 - Node.js 20+

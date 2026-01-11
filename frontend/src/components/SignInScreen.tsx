@@ -9,11 +9,11 @@ interface SignInScreenProps {
 
 export default function SignInScreen({ onShowRegister }: SignInScreenProps) {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Syntropy Protocol
+            OverHeadAI
           </h1>
           <p className="text-gray-600">
             Autonomous mediation for freelance projects
@@ -38,14 +38,14 @@ export default function SignInScreen({ onShowRegister }: SignInScreenProps) {
                 onClick={onShowRegister}
                 className="text-sm text-blue-600 hover:text-blue-700 underline"
               >
-                New to Syntropy? Register here
+                New to OverHeadAI? Register here
               </button>
             )}
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-xs text-center text-gray-500">
-              By connecting, you agree to Syntropy's Terms of Service
+              By connecting, you agree to OverHeadAI's Terms of Service
             </p>
           </div>
         </div>

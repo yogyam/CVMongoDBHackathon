@@ -1,7 +1,7 @@
 {
   "name": "syntropy-backend",
   "version": "1.0.0",
-  "description": "Syntropy Protocol - Multi-Agent Freelance Mediation Backend",
+  "description": "OverHeadAI - Multi-Agent Freelance Mediation Backend",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
